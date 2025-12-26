@@ -3,6 +3,8 @@ Traverse matrix in spiral order.
 
 Get the elements of a n*m matrix in spiral order.
 
+O(n*m) time | O(1) space
+
 author: Giuseppe 
 """
 
@@ -13,7 +15,14 @@ spiralMovesOrdered = [
     "up"
 ]
 
-def spiralTraverse(array):
+def spiralTraverse(array, config):
+    """
+    Main function.
+    
+    :param array: list
+    :param config: dict {outputType: str: flat | nested}
+    """
+
     ret = []
     
     # we get the iterator once
@@ -123,6 +132,7 @@ def spiralTraverse(array):
         # and we will do the same process with the
         # resulting submatrix - without creating a new submatrix in memory
         # - we just use the indexes!
+
         # NOTE:
         # in reality, because the submatrix is defined with indexes,
         # the program consider those indexes, of course.
@@ -166,19 +176,17 @@ def spiralTraverse(array):
         # with index equal the current index + 1"
 
         # the ASSUMPTION is that with each move (right, down etc.)
-        # we are visiting ALL the remaining numbers
+        # we are visiting ALL the remaining numbers in that move.
 
         # the iterator
         currMove = next(iterSpiralMove)
         
-        numbersInMove = getNumbersInMove(array, currMove, {
+        getNumbersInMoveAndAppendTo(array, currMove, {
             "colStart": colStart,
             "colEnd": colEnd,
             "rowStart": rowStart,
             "rowEnd": rowEnd 
-        })
-
-        ret.extend(numbersInMove)
+        }, ret, config)
         
         # if current move is right, next move is down
         # ----------->
@@ -218,7 +226,31 @@ def spiralTraverse(array):
     return ret
             
 
-        
+def getNumbersInMoveAndAppendTo(matrix, move, indexes, arrayToAppend, config):
+    if (not "outputType" in config) or (config["outputType"] == "flat"):
+        arrayToAppend.extend(
+            getNumbersInMove(matrix, move, indexes)
+        )
+
+    elif config["outputType"] == "nested":
+        arrayToAppend.append(
+            getNumbersInMove(matrix, move, indexes)
+        )
+    
+    elif config["outputType"] == "nestedInfo":
+        numbers = getNumbersInMove(matrix, move, indexes)
+        arrayToAppend.append({
+            "indexes": indexes,
+            "numbers": numbers,
+            "move": move
+        })
+
+    else:
+        raise Exception(f"outputType {config["outputType"]} not recognized")
+
+
+
+
 
 def getNumbersInMove(matrix, move, indexes):
     
@@ -361,13 +393,54 @@ def getNumbersInCol(matrix, indexCol, indexStart, indexEnd, direction):
 
 
 
+def printResults(matrix):
+
+    resFlat = spiralTraverse(matrix, {
+        "outputType": "flat"
+    })
+    
+    resNested = spiralTraverse(matrix, {
+        "outputType": "nested"
+    })
+
+    resNestedInfo = spiralTraverse(matrix, {
+        "outputType": "nestedInfo"
+    })
+
+    print()
+
+    print("> Flat list")
+    # print flat
+    print(resFlat)
+    print()
+
+    print("> Nested list")
+    # print nested
+    for arr in resNested:
+        print(arr)
+    print()
+
+    print("> List with info")
+    # print nested info
+    for info in resNestedInfo:
+        print(info)
+    print()
+
+
 matrix1 = [
 # col:   0   1   2   3   4     row:
         [1,  2,  3,  4,  5],   # 0 
         [6,  7,  8,  9,  10],  # 1 
         [11, 12, 13, 14, 15],  # 2
-        [16, 17, 18, 19, 20]   # 3
+        [16, 17, 18, 19, 20],  # 3
+        [21, 22, 23, 24, 25],  # 4
+        [26, 27, 28, 29, 30]   # 5
 ]
-    
-print(spiralTraverse(matrix1))
-# output: [1, 2, 3, 4, 5, 10, 15, 20, 19, 18, 17, 16, 11, 6, 7, 8, 9, 14, 13, 12]
+
+matrix2 = [
+    [1, 2, 3],
+    [4, 5, 6],
+]
+
+printResults(matrix1)
+
