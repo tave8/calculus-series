@@ -1,7 +1,5 @@
 def shortenPath(path):
     # Write your code here.
-    # split the string into to be 
-    stack = []
         
     # case: path starts with /
     # case: path starts with ./
@@ -12,15 +10,82 @@ def shortenPath(path):
     #     # if there's nothing in the stack,
     #     # and the token is root path, then this is the root path
     #     # otherwise it's not root
-    tokens = getTokens(path)
-    print("PATH: ", path)
-    print("------------------")
+    tokenStack = getTokens(path)
+    # print("PATH: ", path)
+    # print("------------------")
 
-    for token in tokens:
+    for token in tokenStack:
         print("token: ", token)
-    print()
-    print()
+    # print()
+    # print()
 
+    simplifyTokenStack(tokenStack)
+
+
+
+
+def simplifyTokenStack(tokenStack):
+    tokensReversed = []
+    # print(tokenStack)
+    # consume the stack, accumulating the
+    # tokens inside of it
+    reachedRoot = False
+    while not reachedRoot and len(tokenStack) > 0:
+        token = tokenStack[-1]
+        
+        # / and /. don't add meaning, just pop
+        # off the stack
+        if token["token"] in ["/", "/."]:
+            tokenStack.pop()
+
+        # it's not a directory token, so 
+        # add it the simplified path
+        elif not token["isDir"]:
+            tokensReversed.append(token["token"])
+            tokenStack.pop()
+
+        # go up to previous directory
+        elif token["token"] == "/..":
+            tokenStack.pop()
+            
+            countMoveUpParent = 1
+
+            # go back in the stack until there are elements
+            # in the stack AND the moveup parent operations
+            # are not completed
+            while len(tokenStack) > 0 and countMoveUpParent != 0:
+                # if the stack peek is yet another 
+                # moveup parent token, accumulate
+                # these moveup parent operations
+                # in the counter
+                if tokenStack[-1]["token"] == "/..":
+                    countMoveUpParent += 1
+
+                elif not tokenStack[-1]["isDir"]:
+                    tokensReversed.append(tokenStack[-1]["token"])
+                    countMoveUpParent -= 1
+                
+                elif tokenStack[-1]["isRoot"]:
+                    reachedRoot = True
+                    break
+                # always remove the current
+                # stack peek
+                tokenStack.pop()
+                
+
+            # while 
+            pass
+            # reachedRoot = True
+        elif token["isRoot"]:
+            reachedRoot = True
+        else:
+            reachedRoot = True
+
+        
+        # print(tokenStack)
+        
+    print("".join(list(reversed(tokensReversed))))
+    # return reversed(tokensReversed)
 
 
 
@@ -192,13 +257,13 @@ def isDirToken(token):
 
 
 # res = shortenPath("/foo/../test/../test/../foo//bar/./baz/")
-res = shortenPath("../../foo/../test/../test/../foo//bar/./baz/")
-res = shortenPath("../foo/../test/../test/../foo//bar/./baz/")
-res = shortenPath("./foo/../test/../test/../foo//bar/./baz/")
-res = shortenPath("/foo/../test/../test/../foo//bar/./baz/")
-res = shortenPath("foo/../test/../test/../foo//bar/./baz/")
-res = shortenPath("foo/../test/../test/../foo//bar/./baz/")
-res = shortenPath("/../test/../test/../foo//bar/./baz/")
+res = shortenPath("../../a/../../b/../c//d/./e/") # ../../../c/d/e
+# res = shortenPath("../foo/../test/../test/../foo//bar/./baz/")
+# res = shortenPath("./foo/../test/../test/../foo//bar/./baz/")
+# res = shortenPath("/foo/../test/../test/../foo//bar/./baz/")
+# res = shortenPath("foo/../test/../test/../foo//bar/./baz/")
+# res = shortenPath("foo/../test/../test/../foo//bar/./baz/")
+# res = shortenPath("/../test/../test/../foo//bar/./baz/")
 
 # res = shortenPath("/foo/bar/../baz")
 # print(res)
